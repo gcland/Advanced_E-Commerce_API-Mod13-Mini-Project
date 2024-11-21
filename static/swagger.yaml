@@ -1,0 +1,1489 @@
+swagger: "2.0"
+info:
+  title: "E-Commerce API"
+  description: "API to manage an E-Commerce Application"
+  version: "1.0.0"
+host: "127.0.0.1:5000"
+schemes:
+  - "http"
+consumes: 
+  - "application/json"
+produces:
+  - "application/json"
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+paths: 
+  # customers endpoints
+  /customers:
+    # get-customers
+    get:
+      tags:
+        - customers
+      summary: "Get a list of all customers"
+      description: "Endpoint to get list of all customers in database."
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            type: "array"
+            items: 
+              $ref: "#definitions/Customer"
+          examples:
+            application/json:
+              name: "Jane Doe"
+              id: 4
+              email: "janedoe@example.com"
+              phone: "123-456-7890"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    # post-customers
+    post:
+      tags:
+        - customers
+      summary: "Add (post) a customer"
+      description: "Endpoint to add customer information to database."
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Add customer information"
+          required: true
+          schema: 
+            $ref: "#/definitions/Customer"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Customer"
+          examples:
+            application/json:
+              name: "Jane Doe"
+              id: 4
+              email: "janedoe@example.com"
+              phone: "123-456-7890"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+  /customers/by-id?id=:
+    put:
+      tags:
+        - customers
+      summary: "Update (put) a customer by id"
+      description: "Endpoint to update customer information in database. Enter customer id in url or enter 'id' within 
+      'Params' header key and customer id # within 'Params' header value.
+      \n\nExample url to view customer with id #1: http://127.0.0.1:5000/customer/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "customer id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Customer"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Customer"
+          examples:
+            application/json:
+              name: "John Doe"
+              id: 4
+              email: "johndoe@example.com"
+              phone: "123-456-8899"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - customers
+      summary: "Delete a customer by id"
+      description: "Endpoint to delete customer information in database. Enter customer id in url or enter 'id' within 
+      'Params' header key and customer id # within 'Params' header value.
+      \n\nExample url to delete customer with id #1: http://127.0.0.1:5000/customer/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "customer id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Customer"
+      responses:
+        200:
+          description: "Successful response"
+          examples:
+            application/json:
+              response: "'message':'Order id#:{id} removed successfully'"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - customers
+      summary: "Get a customer by id"
+      description: "Endpoint to get a customer by their id. Enter customer id in url or enter 'id' within 'Params' 
+      header key and customer id # within 'Params' header value.
+      \n\nExample url to view customer with id #1: http://127.0.0.1:5000/customer/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "customer id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Customer"
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            $ref: "#definitions/Customer"
+          examples:
+            application/json:
+              name: "Jane Doe"
+              id: 4
+              email: "janedoe@example.com"
+              phone: "123-456-7890"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    # ------------------------------------------------- #
+
+  # customer accounts endpoints
+
+  /customerAccounts/login:
+    post:
+      tags:
+        - customerAccounts
+      summary: "Generate token for authentication - Login endpoint"
+      description: "Endpoint for customer account authentication.\nNote: You must use this endpoint with the username: 'csA' and password: 'passwordA' for admin privileges to access / try many endpoints.\n
+      \nTo try this out in the documentation click 'Try it out' on the right side of this endpoint. Input the username: 'csA' and password: 'passwordA' below and click 'execute'. Copy the 'auth_token', go to
+      any endpoint with a lock symbol, and click the lock symbol to open up the 'Available authorizations popup'. Click the input field below 'Value:' and type, 'Bearer ' and paste the 'auth_token' from before.
+      Click 'authorize'. You should now have admin access!"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Credentials for login"
+          required: true
+          schema: 
+            $ref: "#/definitions/LoginCredentials"
+      responses:
+        200:
+          description: "Login successful"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+          examples:
+            application/json:
+              value:
+                auth_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzIxMDEwNDEsImlhdCI6MTczMjAxNDY0MSwic3ViIjoiMiIsInJvbGVzIjpbXX0.s-6NKJMI8IuyIEn_yXsmnfoL74vwvYGjMwgV96JXm84"
+                message: "Login successful"
+                status: "success"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Authentication Token is missing"
+
+  /customerAccounts:
+    # get-customerAccounts
+    get:
+      tags:
+        - customerAccounts
+      summary: "Get a list of all customerAccounts"
+      description: "Endpoint to get list of all customerAccounts in database."
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            type: "array"
+            items: 
+              $ref: "#definitions/CustomerAccount"
+          examples:
+            application/json:
+              customer: {
+                email: "customerA@gmail.com",
+                id: 1,
+                name: "Customer_A",
+                phone: "123-123-1234"
+                }
+              customer_id: 1
+              id: 1
+              password: "passwordA"
+              username: "csA"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    # post-customerAccounts
+    post:
+      tags:
+        - customerAccounts
+      summary: "Add (post) an customerAccount"
+      description: "Endpoint to add customerAccount information to database."
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Add customerAccount information"
+          required: true
+          schema: 
+            $ref: "#/definitions/CustomerAccount"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/CustomerAccount"
+          examples:
+            application/json:
+              customer_id: 1
+              id: 1
+              password: "passwordA"
+              username: "csA"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+  /customerAccounts/by-id?id=:
+    put:
+      tags:
+        - customerAccounts
+      summary: "Update (put) a customerAccount by id"
+      description: "Endpoint to update customerAccount information in database. Enter customerAccount id in url or enter 
+      'id' within 'Params' header key and customerAccount id # within 'Params header value.
+      \n\nExample url to update customerAccount with id #1: http://127.0.0.1:5000/customerAccount/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "customerAccount id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/CustomerAccount"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/CustomerAccount"
+          examples:
+            application/json:
+              customer: {
+                email: "customerB@gmail.com",
+                id: 2,
+                name: "Customer_B",
+                phone: "123-123-1234"
+                }
+              customer_id: 2
+              id: 1
+              password: "string"
+              username: "string"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - customerAccounts
+      summary: "Delete an customerAccount by id"
+      description: "Endpoint to delete customerAccount information in database. Enter customerAccount id in url or enter 
+      'id' within 'Params' header key and customerAccount id # within 'Params' header value.
+      \n\nExample url to delete customerAccount with id #1: http://127.0.0.1:5000/customerAccount/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "customerAccount id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/CustomerAccount"
+      responses:
+        200:
+          description: "Successful response"
+          examples:
+            application/json:
+              response: "'message':'CustomerAccount id#:{id} removed successfully'"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - customerAccounts
+      summary: "Get an customerAccount by id"
+      description: "Endpoint to get a customerAccount by their id. Enter customerAccount id in url or enter 'id' within 
+      'Params' header key and customerAccount id # within 'Params' header value.
+      \n\nExample url to view customerAccount with id #1: http://127.0.0.1:5000/customerAccount/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "customerAccount id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/CustomerAccount"
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            items: 
+              $ref: "#definitions/CustomerAccount"
+          examples:
+            application/json:
+              customer: {
+                email: "customerA@gmail.com",
+                id: 1,
+                name: "Customer_A",
+                phone: "123-123-1234"
+                }
+              customer_id: 1
+              id: 1
+              password: "passwordA"
+              username: "csA"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+  # ------------------------------------------------- #
+
+  # product endpoints
+  /products:
+    # get-products
+    get:
+      tags:
+        - products
+      summary: "Get a list of all products"
+      description: "Endpoint to get list of all products in database."
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            type: "array"
+            items: 
+              $ref: "#definitions/Product"
+          examples:
+            application/json:
+              name: "Laptop"
+              id: 9
+              phone: 399.99
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    # post-products
+    post:
+      tags:
+        - products
+      summary: "Add (post) a product"
+      description: "Endpoint to add product information to database."
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Add product information"
+          required: true
+          schema: 
+            $ref: "#/definitions/Product"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Product"
+          examples:
+            application/json:
+              name: "Laptop"
+              id: 9
+              price: 399.99
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+  
+  /products/by-id?id=:
+    put:
+      tags:
+        - products
+      summary: "Update (put) a product by id"
+      description: "Endpoint to update product information in database. Enter product id in url or enter 'id' within 'Params' 
+      header key and product id # within 'Params' header value.
+      \n\nExample url to update product with id #1: http://127.0.0.1:5000/product/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "product id # (ex: 9)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Product"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Product"
+          examples:
+            application/json:
+              name: "Speakers"
+              id: 1
+              price: 99.99
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - products
+      summary: "Delete a product by id"
+      description: "Endpoint to delete product information in database. Enter product id in url or enter 'id' within 'Params' 
+      header key and product id # within 'Params' header value.
+      \n\nExample url to delete product with id #1: http://127.0.0.1:5000/product/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "product id # (ex: 2)"
+          required: true
+      responses:
+        200:
+          description: "Successful response"
+          examples:
+            application/json:
+              response: "'message':'Order id#:{id} removed successfully'"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - products
+      summary: "Get a product by id"
+      description: "Endpoint to get a product by their id. Enter product id in url or enter 'id' within 'Params' header key 
+      and product id # within 'Params' header value.
+      \n\nExample url to view product with id #1: http://127.0.0.1:5000/product/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "product id # (ex: 9)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Product"
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+             $ref: "#definitions/Product"
+          examples:
+            application/json:
+              name: "Computer"
+              id: 9
+              price: 299.99
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+  #paginate products
+  /products/paginate:
+    get:
+      tags:
+        - products
+      summary: "View list of products by number of results per page"
+      description: "Endpoint to view list of products split divided by a number of products per page. 
+      Enter 'page='{page #} and 'per_page='{number of products per page}' in url or enter 'page' and 'per_page' within 
+      'Params' header key and page # and per_page # within 'Params' header value. Note: if no parameters are input the default 
+      paginate is set to return page 1 with 10 products per page.
+      \n\nExample url to view page #2 with products list split up by 5 products per page:
+      \nhttp://127.0.0.1:5000/products/paginate?page=2&per_page=5"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "product id # (ex: 9)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Product"
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            type: "array"
+            items: 
+              $ref: "#definitions/Product"
+          examples:
+            application/json:
+              name: "Computer"
+              id: 9
+              price: 299.99
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+  # ------------------------------------------------- #
+
+  # order endpoints
+  /orders:
+    # get-orders
+    get:
+      tags:
+        - orders
+      summary: "Get a list of all orders"
+      description: "Endpoint to get list of all orders in database."
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            type: "array"
+            items: 
+              $ref: "#definitions/Order"
+          examples:
+            application/json:
+              date: "2023-12-25"
+              id: 13
+              customer_id: 2
+              total_price: 39.99
+              products: [
+                {
+                  "id": 1
+                }, 
+                {
+                  "id": 2
+                }
+              ]
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    # post-orders
+    post:
+      tags:
+        - orders
+      summary: "Add (post) an order"
+      description: "Endpoint to add order information to database."
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Add order information"
+          required: true
+          schema: 
+            $ref: "#/definitions/Order"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Order"
+          examples:
+            application/json:
+              date: "2023-12-25"
+              id: 13
+              customer_id: 2
+              total_price: 39.99
+              products: [
+                {
+                  "id": 1
+                }, 
+                {
+                  "id": 2
+                }
+              ]
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+  /orders/by-id?id=:
+    put:
+      tags:
+        - orders
+      summary: "Update (put) a order by id"
+      description: "Endpoint to update order information in database. Enter order id in url or enter 'id' within 'Params' 
+      header key and order id # within 'Params' header value.
+      \n\nExample url to update order with id #1: http://127.0.0.1:5000/orders/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "order id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Order"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/Order"
+          examples:
+            application/json:
+              id: 1
+              customer_id: 2
+              total_price: 49.99
+              products: [
+                {
+                  "id": 3
+                }, 
+                {
+                  "id": 2
+                }
+              ]
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - orders
+      summary: "Delete an order by id"
+      description: "Endpoint to delete order information in database. Enter order id in url or enter 'id' within 'Params' 
+      header key and order id # within 'Params' header value.
+      \n\nExample url to delete order with id #1: http://127.0.0.1:5000/orders/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "order id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Order"
+      responses:
+        200:
+          description: "Successful response"
+          examples:
+            application/json:
+              response: "'message':'Order id#:{id} removed successfully'"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - orders
+      summary: "Get an order by id"
+      description: "Endpoint to get a order by their id. Enter order id in url or enter 'id' within 'Params' header key and 
+      order id # within 'Params' header value.
+      \n\nExample url to view order with id #1: http://127.0.0.1:5000/orders/by-id?id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "order id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Order"
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            $ref: "#definitions/order"
+          examples:
+            application/json:
+              id: 3
+              customer_id: 1
+              total_price: 19.99
+              products: [
+                {
+                  "id": 1
+                }, 
+                {
+                  "id": 3
+                }
+              ]
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+  /orders/paginate:
+    get:
+      tags:
+        - orders
+      summary: "View list of orders by number of results per page"
+      description: "Endpoint to view list of orders split divided by a number of orders per page. 
+      Enter 'page='{page #} and 'per_page='{number of orders per page}' in url or enter 'page' and 'per_page' within 
+      'Params' header key and page # and per_page # within 'Params' header value. Note: if no parameters are input the default 
+      paginate is set to return page 1 with 10 orders per page.
+      \n\nExample url to view page #2 with orders list split up by 5 orders per page:\nhttp://127.0.0.1:5000/orders/paginate?page=2&per_page=5"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "order id # (ex: 9)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Order"
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            type: "array"
+            items: 
+              $ref: "#definitions/Order"
+          examples:
+            application/json:
+              name: "Computer"
+              id: 9
+              price: 299.99
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+  
+  /orders/all_by-customer_id?customer_id=1:
+     get:
+      tags:
+        - orders
+      summary: "Get a list of all orders by one customer"
+      description: "Endpoint to get a list of all orders by one customer by their customer_id. 
+      Enter customer_id in url or enter 'customer_id' within 'Params' header key and customer_id # within 'Params' header value.
+      \n\nExample url to view all orders by customer with id #1: http://127.0.0.1:5000/orders/all_by-customer_id?customer_id=1"
+      parameters:
+        - in: "Query Params"
+          name: "id"
+          Description: "order id # (ex: 4)"
+          required: true
+          schema: 
+            $ref: "#/definitions/Order"
+      responses:
+        200:
+          description: "Successful response"
+          schema:
+            $ref: "#definitions/order"
+          examples:
+            application/json:
+              id: 13
+              customer_id: 2
+              total_price: 39.99
+              products: [
+                {
+                  "id": 1
+                }, 
+                {
+                  "id": 2
+                }
+              ]
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                status: "error"
+                message: "Invalid input"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "Token is missing | token has expired | invalid token"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/Error"
+          examples:
+            application/json:
+              value:
+                error: "error"
+                message: "User does not have required role"
+      security:
+        - bearerAuth: []
+
+
+# ------------------------------------------------- #
+
+# Models:
+
+definitions: 
+  Customer:
+    type: "object"
+    properties: 
+      name: 
+        type: "string"
+        description: "Customer name"
+      email:
+        type: "string"
+        description: "Customer email"
+      phone:
+        type: "string"
+        description: "Customer phone number"
+      id: 
+        type: "integer"
+        format: "int64"
+        description: "Customer unique ID (auto-generated on creation in database)"
+    required: 
+      - "name"
+      - "email"
+      - "phone"
+      - "id"
+  
+  CustomerAccount:
+    type: "object"
+    properties: 
+      username: 
+        type: "string"
+        description: "Customer account username"
+      password:
+        type: "string"
+        description: "Customer account password"
+      customer_id:
+        type: "integer"
+        format: "int64"
+        description: "Customer unique ID"
+      id: 
+        type: "integer"
+        format: "int64"
+        description: "Customer account unique ID (auto-generated on creation in database)"
+    required: 
+      - "username"
+      - "password"
+      - "customer_id"
+      - "id"
+
+  Product:
+    type: "object"
+    properties: 
+      name: 
+        type: "string"
+        description: "Product name"
+      price:
+        type: "float"
+        description: "Product price"
+      id: 
+        type: "integer"
+        format: "int64"
+        description: "Product unique ID (auto-generated on creation in database)"
+    required: 
+      - "name"
+      - "price"
+      - "id"
+
+  Order:
+    type: "object"
+    properties: 
+      date: 
+        type: "date"
+        format: "YYYY-MM-DD"
+        description: "Date of order (YYYY-MM-DD)"
+      customer_id:
+        type: "integer"
+        format: "int64"
+        description: "ID of customer placing order"
+      total_price:
+        type: "float"
+        description: "Total of order"
+      products:
+        type: "array"
+        description: "Array of products"
+      id: 
+        type: "integer"
+        format: "int64"
+        description: "Order unique ID (auto-generated on creation in database)"
+    required: 
+      - "date"
+      - "customer_id"
+      - "total_price"
+      - "products"
+      - "id"
+
+  LoginCredentials: 
+    type: "object"
+    properties: 
+      username: 
+        type: "string"
+        description: "Username"
+      password:
+        type: "string"
+        format: "password"
+        description: "Password"
+    required: 
+      - "username"
+      - "password"
+  LoginResponse:
+    type: "object"
+    properties:
+      auth_token:
+        type: "string"
+        description: "Authentication token"
+      message: 
+        type: "string"
+        description: "Message indicating succes of failure"
+      status: 
+        type: "string"
+        description: "Status of operation"
+    required:
+      - "auth_token"
+      - "message"
+  Error:
+    type: "object"
+    properties: 
+      status:
+        type: "string"
+        description: "Status of the error"
+      message: 
+        type: "string"
+        description: "Description of the error"
+    required:
+      - "status"
+      - "message"
