@@ -14,7 +14,7 @@ from caching import cache
 @cache.cached(timeout=180)
 def get():
     customerAccounts = customerAccountService.get()
-    return customerAccounts
+    return customerAccounts, 200
 
 def login():
     customer = request.json

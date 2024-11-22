@@ -5,8 +5,8 @@ from marshmallow import ValidationError
 from utils.utils import token_required, role_required
 from caching import cache
 
-@token_required
-@role_required('admin') 
+# @token_required
+# @role_required('admin') 
 def save(): # post request - contains JSON
     try:
         product_data = product_schema.load(request.json)
@@ -18,12 +18,12 @@ def save(): # post request - contains JSON
     except ValidationError as e:
         return jsonify({"error":str(e)}), 400
     
-@token_required
-@role_required('admin') 
-@cache.cached(timeout=180)
+# @token_required
+# @role_required('admin') 
+# @cache.cached(timeout=180)
 def get():
     products = productService.get()
-    return products
+    return products, 200
 
 @token_required
 @role_required('admin') 
