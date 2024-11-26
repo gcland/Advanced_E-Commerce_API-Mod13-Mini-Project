@@ -25,15 +25,15 @@ def get():
     products = productService.get()
     return products, 200
 
-@token_required
-@role_required('admin') 
+# @token_required
+# @role_required('admin') 
 def find_all_pagination():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     return products_schema.jsonify(productService.find_all_pagination(page=page, per_page=per_page)), 200
 
-@token_required
-@role_required('admin') 
+# @token_required
+# @role_required('admin') 
 def put(): 
     try:
         id = request.args.get('id')
@@ -47,8 +47,8 @@ def put():
     except ValidationError as e:
         return jsonify({"error":str(e)}), 400
     
-@token_required
-@role_required('admin')         
+# @token_required
+# @role_required('admin')         
 def delete(): 
     try:
         id = request.args.get('id')
@@ -57,9 +57,9 @@ def delete():
     except ValidationError as err:
         return jsonify({"error":str(err)}), 400
     
-@token_required
-@role_required('admin')     
-@cache.cached(timeout=180)
+# @token_required
+# @role_required('admin')     
+# @cache.cached(timeout=180)
 def get_by_id(): 
     try:
         id = request.args.get('id')

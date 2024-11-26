@@ -34,7 +34,7 @@ def find_all_pagination():
     per_page = request.args.get('per_page', 10, type=int)
     return orders_schema.jsonify(orderService.find_all_pagination(page=page, per_page=per_page)), 200
 
-@token_required
+# @token_required
 def put(): 
     try:
         id = request.args.get('id')
@@ -48,7 +48,7 @@ def put():
     except ValidationError as e:
         return jsonify({"error":str(e)}), 400
 
-@token_required      
+# @token_required      
 def delete(): 
     try:
         id = request.args.get('id')
@@ -57,8 +57,8 @@ def delete():
     except ValidationError as err:
         return jsonify({"error":str(err)}), 400
 
-@token_required  
-@cache.cached(timeout=180)
+# @token_required  
+# @cache.cached(timeout=180)
 def get_by_id(): 
     try:
         id = request.args.get('id')
@@ -67,8 +67,8 @@ def get_by_id():
     except ValidationError as err:
         return jsonify({"error":str(err)}), 400
     
-@token_required  
-@cache.cached(timeout=180)
+# @token_required  
+# @cache.cached(timeout=180)
 def get_all_by_customer_id(): 
     try:
         customer_id = request.args.get('customer_id')
@@ -77,7 +77,7 @@ def get_all_by_customer_id():
     except ValidationError as err:
         return jsonify({"error":str(err)}), 400
 
-@token_required
+# @token_required
 def top_sellers(): 
     products = orderService.top_sellers()
     return orders_schema.jsonify(products), 200

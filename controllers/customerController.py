@@ -28,8 +28,8 @@ def save(): # post request - contains JSON
     except ValidationError as e:
         return jsonify({"error":str(e)}), 400
 
-@token_required
-@role_required('admin') 
+# @token_required
+# @role_required('admin') 
 def put(): 
     try:
         id = request.args.get('id')
@@ -43,8 +43,8 @@ def put():
     except ValidationError as e:
         return jsonify({"error":str(e)}), 400
 
-@token_required
-@role_required('admin')        
+# @token_required
+# @role_required('admin')        
 def delete(): 
     try:
         id = request.args.get('id')
@@ -53,9 +53,9 @@ def delete():
     except ValidationError as err:
         return jsonify({"error":str(err)}), 400
 
-@token_required
-@role_required('admin')   
-@cache.cached(timeout=180)  
+# @token_required
+# @role_required('admin')   
+# @cache.cached(timeout=180)  
 def get_by_id(): 
     try:
         id = request.args.get('id')
