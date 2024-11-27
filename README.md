@@ -1,6 +1,6 @@
-Advanced E-Commerce API
 
-Welcome to Playlist Management API: A python Flask, SqlAlchemy API project by Grant Copeland
+
+Welcome to Advanced E-Commerce API: A python Flask, SqlAlchemy API project by Grant Copeland
 
 
 First, you need to clone down the project using this command here:
