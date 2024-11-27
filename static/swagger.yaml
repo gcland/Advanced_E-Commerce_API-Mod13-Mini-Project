@@ -3,9 +3,9 @@ info:
   title: "E-Commerce API"
   description: "API to manage an E-Commerce Application"
   version: "1.0.0"
-host: "https://advanced-e-commerce-api-mod13-mini.onrender.com"
+host: "advanced-e-commerce-api-mod13-mini.onrender.com"
 schemes:
-  - "http"
+  - "https"
 consumes: 
   - "application/json"
 produces:
