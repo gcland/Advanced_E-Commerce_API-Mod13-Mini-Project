@@ -4,6 +4,9 @@ from schema import ma
 from limiter import limiter
 from caching import cache
 from sqlalchemy.orm import Session
+from password import password
+import pymysql
+pymysql.install_as_MySQLdb()
 
 from models.customer import Customer
 from models.customerAccount import CustomerAccount
@@ -32,12 +35,13 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://advanced_e_commerce_api_postgresql_user:wTztbUUf3cNaJPMDlfeJHM2YWXVd9Z9o@dpg-ct31nolsvqrc738ieus0-a.oregon-postgres.render.com/advanced_e_commerce_api_postgresql'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://root:{password}@localhost/e_commerce_db'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://advanced_e_commerce_api_postgresql_user:wTztbUUf3cNaJPMDlfeJHM2YWXVd9Z9o@dpg-ct31nolsvqrc738ieus0-a.oregon-postgres.render.com/advanced_e_commerce_api_postgresql'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     ma.init_app(app)
-    cache.init_app(app)
-    limiter.init_app(app)
+    # cache.init_app(app)
+    # limiter.init_app(app)
 
     return app
 
@@ -93,16 +97,15 @@ def init_roles_customers_data():
             session.add_all(roles_customer)
 
 
-# if __name__ == '__main__':
-app = create_app()
-blue_print_config(app)
-configure_rate_limit()
+if __name__ == '__main__':
+    app = create_app()
+    blue_print_config(app)
+    # configure_rate_limit()
+    app.run(debug=True)
 
 with app.app_context():
-    db.drop_all()
+    # db.drop_all()
     db.create_all()
     init_roles_customers_info_data()
-    init_roles_data()
-    init_roles_customers_data()
-
-#   app.run(debug=True)
+    # init_roles_data()
+    # init_roles_customers_data()
