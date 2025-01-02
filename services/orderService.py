@@ -2,54 +2,138 @@ from models.customer import Customer
 from models.order import Order
 from models.product import Product
 from models.orderProduct import order_product
+from datetime import datetime
 from sqlalchemy import select, func
 from flask import request, jsonify
 from sqlalchemy.orm import Session
 from database import db
-from models.schemas.orderSchema import order_schema, orders_schema
+from sqlalchemy.exc import OperationalError
+import time
+# from models.schemas.orderSchema import order_schema, orders_schema
 
-def save(order_data):
-    with Session(db.engine) as session:
-        with session.begin():
-            # products = [{ "id": product['id'], "qty": product['qty']} for product in order_data['products']]
-            # print('Product Id-Qty for order:', products)
-            # product_ids = [product['id'] for product in products]
-            # print('Product IDs for order:', product_ids)
-            product_ids = [product['id'] for product in order_data['products']]
-            print(order_data['products'])
-            products = session.execute(select(Product).where(Product.id.in_(product_ids))).scalars().all()
-            print(products)
 
-            customer_id = order_data['customer_id']
-            customer = session.execute(select(Customer).where(Customer.id == customer_id)).scalars().first()
+# Endpoint to create a new order
+# Example input:
 
-            if len(products) != len(product_ids):
-                raise ValueError("One or more products do not exist")
+# {
+#     "customer_id": 1,
+#     "delivery_date": "2024-12-15",
+#     "products": [
+#         {
+#             "product_id": 1,
+#             "quantity": 5
+#         },
+#         {
+#             "product_id": 2,
+#             "quantity": 8
+#         }
+#     ]
+# }
+def save():
+    max_retries = 3
+    retry_delay = 0.5  # seconds
+    retry_count = 0
 
-            if not customer:
-                raise ValueError(f'Customer with ID {customer_id} not found.')
-            
-            new_order = Order(customer_id=order_data['customer_id'], products=products, date=order_data['date'])
-            
-            session.add(new_order)
-            print('New Order ID (before commit):', new_order.id)
-            session.flush()
-            print('New Order ID (after commit):', new_order.id)
-            session.commit()
+    while retry_count < max_retries:
+        try:
+            with Session(db.engine) as session:
+                with session.begin():
+                    # Get data from request
+                    data = request.get_json()
+                    
+                    # Validate input
+                    if not data:
+                        return jsonify({"error": "No data provided"}), 400
+                    
+                    # Check required fields
+                    if 'customer_id' not in data or 'products' not in data:
+                        return jsonify({"error": "Customer ID and Products are required"}), 400
 
-        session.refresh(new_order)
+                    # Find the customer - using select for consistency
+                    customer = session.execute(
+                        select(Customer).where(Customer.id == data['customer_id'])
+                    ).scalar_one_or_none()
+                    
+                    if not customer:
+                        return jsonify({"error": "Customer not found"}), 404
 
-        for product in new_order.products:
-            session.refresh(product)
+                    # Disable autoflush while we validate and prepare everything
+                    with session.no_autoflush:
+                        # First, validate and lock all products
+                        products_info = []
+                        for product_data in data['products']:
+                            # Find and lock the product
+                            product = session.execute(
+                                select(Product)
+                                .where(Product.id == product_data['product_id'])
+                                .with_for_update(nowait=True)  # Lock row with no wait, returns error if locked
+                            ).scalar_one_or_none()
 
-        return new_order
-    
+                            if not product:
+                                return jsonify({"error": f"Product {product_data['product_id']} not found"}), 404
+
+                            quantity = product_data.get('quantity', 1)
+                            if product.stock < quantity:
+                                return jsonify({
+                                    "error": f"Insufficient stock for product {product.name}. "
+                                    f"Requested: {quantity}, Available: {product.stock}"
+                                }), 400
+
+                            products_info.append((product, quantity))
+                        # print(products_info)
+                        # Create new order
+                        new_order = Order(
+                            customer_id=data['customer_id'],
+                            delivery_date=datetime.fromisoformat(data.get('delivery_date')) if data.get('delivery_date') else None,
+                            order_total=0.0
+                        )
+                        session.add(new_order)
+                        session.flush()  # Get the ID without committing
+
+                        # Process all products
+                        for product, quantity in products_info:
+                            # Reduce stock
+                            product.stock -= quantity
+                            
+                            # Calculate order total
+                            new_order.order_total += product.price * quantity
+                            
+                            # Add to order_product table
+                            session.execute(
+                                order_product.insert().values(
+                                    order_id=new_order.id,
+                                    product_id=product.id,
+                                    quantity=quantity
+                                )
+                            )
+
+                        # The session.begin() context manager will automatically commit
+                        return jsonify(new_order.to_dict(session=session)), 201
+
+        except OperationalError as e:
+            if "Lock wait timeout exceeded" in str(e) and retry_count < max_retries - 1:
+                retry_count += 1
+                time.sleep(retry_delay * retry_count)  # Exponential backoff
+                continue
+            return jsonify({"error": str(e)}), 500
+        
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"error": "Maximum retry attempts exceeded"}), 500
+
 def get():
     with Session(db.engine) as session:
         with session.begin():
-            orders = session.query(Order).all()
-            json_orders = orders_schema.jsonify(orders).json
-            return json_orders
+            try:
+                # Query all orders
+                orders = session.query(Order).all()
+                
+                # Convert to list of dictionaries
+                orders_list = [order.to_dict() for order in orders]
+                return jsonify(orders_list), 200
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
 
 # secondary method to get all orders     
 # def find_all():
@@ -57,88 +141,123 @@ def get():
 #     orders = db.session.execute(query).scalars().all() 
 #     return orders
 
-def put(id, order_data):
+def put():
     with Session(db.engine) as session:
         with session.begin():
+            id = request.args.get('id') # example url: /orders/by-id?id=2
+            # Get order
             order = session.query(Order).get(id)
-            order.date = order_data['date']
-
-            order.customer_id = order_data['customer_id']
-            customer_id = order_data['customer_id']
-            customer = session.execute(select(Customer).where(Customer.id == customer_id)).scalars().first()
+            if not order:
+                return jsonify({'message':f'Order id#:{id} not found.'}), 400
+            
+            # Clear previous products
             order.products.clear()
-            product_ids = [product['id'] for product in order_data['products']]
-            print(order_data['products'])
-            products = session.execute(select(Product).where(Product.id.in_(product_ids))).scalars().all()
 
-            if not customer:
-                raise ValueError(f'Customer with ID {customer_id} not found.')
-
-            if len(products) != len(product_ids):
-                raise ValueError("One or more products do not exist")
+            # Get data from request
+            data = request.get_json()
             
-            order.products = products
+            # Validate input
+            if not data:
+                return jsonify({"error": "No data provided"}), 400
             
-            session.commit()
-
-        session.refresh(order)
-        return order
+            # Check required fields
+            if 'customer_id' not in data or 'products' not in data:
+                return jsonify({"error": "Customer ID and Products are required"}), 400
+            
+            try:
+                # Find the customer
+                customer = Customer.query.get(data['customer_id'])
+                if not customer:
+                    return jsonify({"error": "Customer not found"}), 404
+                
+                # Create new order
+                new_order = Order(
+                    customer_id=data['customer_id'],
+                    delivery_date=datetime.fromisoformat(data.get('delivery_date')) if data.get('delivery_date') else None,
+                    order_total=0.0  # Initialize order total
+                )
+                
+                # First, save the order to get its ID
+                db.session.add(new_order)
+                db.session.flush()  # This assigns an ID without committing the transaction
+                
+                # Add products to the order
+                for product_data in data['products']:
+                    # Find the product
+                    product = Product.query.get(product_data['product_id'])
+                    if not product:
+                        db.session.rollback()
+                        return jsonify({"error": f"Product {product_data['product_id']} not found"}), 404
+                    
+                    # Check stock
+                    quantity = product_data.get('quantity', 1)
+                    if product.stock < quantity:
+                        db.session.rollback()
+                        return jsonify({
+                            "error": f"Insufficient stock for product {product.name}. " 
+                                    f"Requested: {quantity}, Available: {product.stock}"
+                        }), 400
+                    
+                    # Reduce stock
+                    product.stock -= quantity
+                    
+                    # Calculate order total
+                    new_order.order_total += product.price * quantity
+                    
+                    # Insert product to order with quantity using direct SQL
+                    db.session.execute(
+                        order_product.insert().values(
+                            order_id=new_order.id, 
+                            product_id=product.id, 
+                            quantity=quantity
+                        )
+                    )
+                
+                # Commit the order, product associations, and stock changes
+                db.session.commit()
+                
+                return new_order
+            
+            except Exception as e:
+                # Rollback in case of error
+                db.session.rollback()
+                return jsonify({"error": str(e)}), 500
     
-def delete(id):
+def delete():
     with Session(db.engine) as session:
         with session.begin():
+            id = request.args.get('id') # example url: /orders/by-id?id=2
+            # Get order
             order = session.query(Order).get(id)
+            if not order:
+                return jsonify({'message':f'Order id#:{id} not found.'}), 400
             session.delete(order)
             session.commit()
         return jsonify({'message':f'Order id#:{id} removed successfully'}), 200
 
-def get_by_id(id):
+def get_by_id():
     with Session(db.engine) as session:
         with session.begin():
+            id = request.args.get('id') # example url: /orders/by-id?id=2
+            # Get order
             order = session.query(Order).get(id)
-            json_order = order_schema.jsonify(order).json
+            if not order:
+                return jsonify({'message':f'Order id#:{id} not found.'}), 400
+            order = order.to_dict()
+            json_order = jsonify(order), 200
             return json_order
         
-def get_all_by_customer_id(customer_id):
+def get_all_by_customer_id():
     with Session(db.engine) as session:
         with session.begin():
+            customer_id = request.args.get('id') # example url: /all_by-customer_id?customer_id=3
             orders = session.query(Order).filter(Order.customer_id == customer_id).all()
-            json_orders = orders_schema.jsonify(orders)
-            return json_orders
+            orders_list = [order.to_dict() for order in orders]
+            return jsonify(orders_list), 200
 
-#             orders = session.query(Order).all()
-#             print(orders)
-#             json_orders = orders_schema.jsonify(orders).json
-#             print(json_orders)
-#             return json_orders
-
-def find_all_pagination(page=1, per_page=10):
+def find_all_pagination():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     orders = db.paginate(select(Order), page=page, per_page=per_page)
-    return orders
-
-def top_sellers(): 
-# Calculates total quantity of products ordered for each product_id. Ordered by descending order (top is first)
-    with Session(db.engine) as session:
-        with session.begin():
-
-            # query = session.query(Order).join(order_product).join(Product).filter((order_product.c.order_id == Order.id) & (order_product.c.product_id == Product.id)).all()
-            # --- Attempt at joining Order, order_product, Product tables and filtering data --- #
-
-            query = select(Product.id.label('product_id'), func.sum(Order.quantity).label('total_quantity')).select_from(Order).where(Product.id == Order.products).group_by(Product.id)
-            # --- This query returns the correct response for 1 product (the first response it can). 
-
-
-            # Query printout:
-
-            # SELECT products.id AS product_id, sum(orders.quantity) AS total_quantity 
-            # FROM orders, products, order_product AS order_product_1       # Note: it only queries 'order_product_1'. Unsure how to allow it to query all items or a different item in the order_product list
-            # WHERE products.id = (orders.id = order_product_1.order_id AND products.id = order_product_1.product_id) 
-            # GROUP BY products.id
-
-            
-
-            print(query)
-            result = db.session.execute(query).all()
-
-            print(result)
-            return result
+    orders_list = [order.to_dict() for order in orders]
+    return jsonify(orders_list), 200
