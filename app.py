@@ -110,7 +110,7 @@ def init_roles_customers_data():
     # init_roles_customers_data()
 
 
-# Deployment configuration ()
+# Deployment configuration (Enable for deployment)
 app = create_app()
 blue_print_config(app)
 # configure_rate_limit()    # Use if rate limiter is desired
