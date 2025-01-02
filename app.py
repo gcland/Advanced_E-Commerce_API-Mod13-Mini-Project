@@ -96,16 +96,28 @@ def init_roles_customers_data():
             ]
             session.add_all(roles_customer)
 
-
-if __name__ == '__main__':
-    app = create_app()
-    blue_print_config(app)
+# Development configuration (leave unused for deployment)
+# if __name__ == '__main__':
+#     app = create_app()
+#     blue_print_config(app)
     # configure_rate_limit()
-    app.run(debug=True)
-
-with app.app_context():
+    # app.run(debug=True)
+# with app.app_context():
     # db.drop_all()
-    db.create_all()
-    init_roles_customers_info_data()
+    # db.create_all()
+    # init_roles_customers_info_data()
     # init_roles_data()
     # init_roles_customers_data()
+
+
+# Deployment configuration ()
+app = create_app()
+blue_print_config(app)
+# configure_rate_limit()    # Use if rate limiter is desired
+with app.app_context():
+    db.drop_all()
+    db.create_all()
+    init_roles_customers_info_data()
+    app.run(debug=True)
+    # init_roles_data()             # Enable for role usage
+    # init_roles_customers_data()   # Enable for role usage
