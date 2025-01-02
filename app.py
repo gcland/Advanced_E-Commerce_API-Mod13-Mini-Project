@@ -35,8 +35,8 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://root:{password}@localhost/e_commerce_db'
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://advanced_e_commerce_api_postgresql_user:wTztbUUf3cNaJPMDlfeJHM2YWXVd9Z9o@dpg-ct31nolsvqrc738ieus0-a.oregon-postgres.render.com/advanced_e_commerce_api_postgresql'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://root:{password}@localhost/e_commerce_db'   # For testing with MySQL database; ensure password file is updated with user password.
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://advanced_e_commerce_api_postgresql_user:wTztbUUf3cNaJPMDlfeJHM2YWXVd9Z9o@dpg-ct31nolsvqrc738ieus0-a.oregon-postgres.render.com/advanced_e_commerce_api_postgresql'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     ma.init_app(app)
