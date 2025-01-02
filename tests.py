@@ -185,7 +185,7 @@ class TestProductEndpoints(unittest.TestCase):
         print('Product get test:', response, response.status_code, '\n------------------')
         self.assertEqual(response.status_code, 200)
 
-class OrderTest(unittest.TestCase):
+class TestOrderEndpoints(unittest.TestCase):
     def setUp(self):
         self.app = Flask(__name__)
         self.app.config['TESTING'] = True
