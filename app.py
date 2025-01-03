@@ -118,6 +118,5 @@ with app.app_context():
     db.drop_all()
     db.create_all()
     init_roles_customers_info_data()
-    app.run(debug=True)
     # init_roles_data()             # Enable for role usage
     # init_roles_customers_data()   # Enable for role usage
