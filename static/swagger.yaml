@@ -843,8 +843,6 @@ paths:
              $ref: "#definitions/Product"
           examples:
             application/json:
-              name: "Computer"
-              id: 9
               name: "Speakers"
               id: 1
               description: "Computer system."
