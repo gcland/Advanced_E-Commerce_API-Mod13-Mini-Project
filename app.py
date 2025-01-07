@@ -24,6 +24,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 
 SWAGGER_URL = '/api/docs'
 API_URL = '/static/swagger.yaml'
+# SWAGGER URL: https://advanced-e-commerce-api-mod13-mini.onrender.com/api/docs/#/
 
 swaggerui_blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,
